@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover: ocupa a tela toda em celulares com notch -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Avalie sua experiência</title>
+
+  <style>
+    /* =========================================================
+       1. CORES E TAMANHOS  (aqui você ajusta o visual)
+       ========================================================= */
+    :root {
+      /* ┌──────────────────────────────────────────────────────┐
+         │  COR DE FUNDO DA PÁGINA — ALTERE AQUI                │
+         │  Exemplos: #ffffff (branco), #0f1115 (escuro)        │
+         └──────────────────────────────────────────────────────┘ */
+      --cor-fundo: #333333;
+
+      /* Se escurecer o fundo, troque também a cor do texto
+         (ex.: #ffffff) para não perder a leitura */
+      --cor-texto: #ffffff;
+
+      /* Cor do botão "Clique para avaliar" e do texto dentro dele */
+      --cor-botao: #ff0000;
+      --cor-texto-botao: #333333;
+
+      /* Largura do logo em relação à largura da tela */
+      --largura-logo: 55vw;          /* smartphone */
+      --largura-logo-desktop: 30vw;  /* computador */
+
+      /* Estrelas em arco: tons de dourado (de cima para baixo) e largura do arco */
+      --cor-estrela-clara: #ffd24d;
+      --cor-estrela: #ffa800;
+      --largura-arco: min(80vw, 280px);
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    * { box-sizing: border-box; }
+
+    /* Garante que o atributo hidden sempre esconda, mesmo em
+       elementos que têm display definido por classe */
+    [hidden] { display: none !important; }
+
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      background: var(--cor-fundo);
+      color: var(--cor-texto);
+      /* Fontes do sistema: nenhuma requisição externa, a página abre
+         instantânea ao encostar a tag NFC, mesmo com sinal fraco */
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* =========================================================
+       3. LAYOUT (coluna única, centralizada)
+       ========================================================= */
+    .pagina {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      text-align: center;
+      /* Respiro lateral + área segura do celular (barras do sistema) */
+      padding: calc(24px + env(safe-area-inset-top, 0px)) 24px
+               calc(24px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* =========================================================
+       4. LOGO
+       ========================================================= */
+    .logo {
+      width: var(--largura-logo);
+      height: auto;
+      /* 35vh: evita que um logo alto ou quadrado empurre o botão
+         para fora da primeira tela do celular */
+      max-height: 35vh;
+      object-fit: contain;
+    }
+
+    .nome-empresa {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* 768px: a partir daqui consideramos computador/tablet grande */
+    @media (min-width: 768px) {
+      .logo { width: var(--largura-logo-desktop); }
+    }
+
+    /* =========================================================
+       5. ESTRELAS EM ARCO
+       ========================================================= */
+    .link-estrelas {
+      display: block;
+      width: var(--largura-arco);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .estrelas-arco {
+      display: block;
+      width: 100%;
+      height: auto;
+      /* visible: o "pulo" da animação passa um pouco do desenho sem ser cortado */
+      overflow: visible;
+    }
+
+    .estrela-arco use { fill: url(#gradiente-estrela); }
+
+    .estrela-arco {
+      /* fill-box + center: cada estrela cresce a partir do próprio centro */
+      transform-box: fill-box;
+      transform-origin: center;
+      /* Curva com leve "salto" no final: dá o efeito de estrela se acendendo */
+      animation: estrela-surge 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation-delay: var(--atraso);
+    }
+
+    /* Única animação da página: as estrelas surgem da esquerda para a direita,
+       como se uma nota estivesse sendo dada */
+    @keyframes estrela-surge {
+      from { opacity: 0; transform: scale(0.3); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .estrela-arco { animation: none; }
+    }
+
+    /* =========================================================
+       6. TEXTOS
+       ========================================================= */
+    .slogan {
+      margin: 0;
+      max-width: 440px;
+      font-size: 1.1rem;
+      line-height: 1.4;
+      font-style: italic;
+    }
+
+    .mensagem {
+      margin: 0;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mensagem-titulo {
+      font-size: 1.5rem;
+      line-height: 1.25;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .mensagem-texto {
+      font-size: 1.2rem;
+      line-height: 1.35;
+    }
+
+    /* =========================================================
+       7. BOTÃO
+       ========================================================= */
+    .botao-avaliar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 360px;
+      /* 56px: alvo de toque confortável (mínimo recomendado é 48px) */
+      min-height: 56px;
+      border-radius: 999px;
+      background: var(--cor-botao);
+      color: var(--cor-texto-botao);
+      font-size: 1.15rem;
+      font-weight: 600;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .botao-avaliar:focus-visible {
+      outline: 3px solid var(--cor-texto);
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="pagina">
+
+    <!-- ===== 1. IDENTIDADE DA EMPRESA (logo; se falhar, mostra o nome) ===== -->
+    <img id="logo" class="logo" alt="" hidden>
+    <h1 id="nome-empresa" class="nome-empresa" hidden></h1>
+
+    <!-- ===== 2. SLOGAN (só aparece se preenchido no CONFIG) ===== -->
+    <p id="slogan" class="slogan" hidden></p>
+
+    <!-- ===== 3. ESTRELAS EM ARCO (decorativas; tocar nelas também leva ao Google) ===== -->
+    <a id="link-estrelas" class="link-estrelas" href="#" tabindex="-1" aria-hidden="true">
+      <svg class="estrelas-arco" viewBox="-120 -178 240 90" focusable="false">
+        <defs>
+          <linearGradient id="gradiente-estrela" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" style="stop-color: var(--cor-estrela-clara)"/>
+            <stop offset="1" style="stop-color: var(--cor-estrela)"/>
+          </linearGradient>
+          <path id="forma-estrela" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>
+        </defs>
+
+        <!-- 5 estrelas sobre um arco de raio 150, a cada 20°, giradas para acompanhar a curva.
+             A do meio é maior (escala 1.92) e as das pontas menores (1.58): dá volume ao arco.
+             --atraso: 120ms entre uma estrela e outra (ordem esquerda → direita) -->
+        <g transform="translate(-96.4 -114.9) rotate(-40) scale(1.58)"><g class="estrela-arco" style="--atraso: 200ms"><use href="#forma-estrela" transform="translate(-12 -12)"/></g></g>
+        <g transform="translate(-51.3 -140.9) rotate(-20) scale(1.75)"><g class="estrela-arco" style="--atraso: 320ms"><use href="#forma-estrela" transform="translate(-12 -12)"/></g></g>
+        <g transform="translate(0 -150) scale(1.92)"><g class="estrela-arco" style="--atraso: 440ms"><use href="#forma-estrela" transform="translate(-12 -12)"/></g></g>
+        <g transform="translate(51.3 -140.9) rotate(20) scale(1.75)"><g class="estrela-arco" style="--atraso: 560ms"><use href="#forma-estrela" transform="translate(-12 -12)"/></g></g>
+        <g transform="translate(96.4 -114.9) rotate(40) scale(1.58)"><g class="estrela-arco" style="--atraso: 680ms"><use href="#forma-estrela" transform="translate(-12 -12)"/></g></g>
+      </svg>
+    </a>
+
+    <!-- ===== 4. MENSAGEM ===== -->
+    <p class="mensagem">
+      <span class="mensagem-titulo">Obrigado por nos avaliar.</span>
+      <span class="mensagem-texto">Conte como foi sua experiência?</span>
+    </p>
+
+    <!-- ===== 5. BOTÃO (o endereço é preenchido pelo JavaScript a partir do CONFIG) ===== -->
+    <a id="botao-avaliar" class="botao-avaliar" href="#">Clique para avaliar</a>
+  </main>
+
+  <script>
+    /* =========================================================
+       1. CONFIGURAÇÃO (único trecho a editar para cada cliente)
+       ========================================================= */
+    const CONFIG = {
+      // Nome exibido se o logo não existir ou falhar ao carregar
+      nome: "Restauraçãos de Vidros e Cuidados Automotivos",
+      // Caminho do arquivo do logo (mesma pasta deste index.html)
+      logo: "LOGO3.png",
+      // Slogan da empresa; deixe "" (vazio) se não tiver
+      slogan: "",
+      // Link gerado pelo gerar_link_review_sem_api.py
+      linkAvaliacao: "https://search.google.com/local/writereview?placeid=ChIJM8j0rR25YYQRZPOwCSSCDf0"
+    };
+
+    /* =========================================================
+       2. IDENTIDADE (logo com plano B em texto, slogan opcional)
+       ========================================================= */
+
+    /**
+     * Mostra o logo da empresa; se a imagem falhar, mostra o nome em texto.
+     * Por que o plano B: um logo quebrado (ícone de imagem) passa
+     * impressão de página abandonada para o cliente do empresário.
+     * @returns {void}
+     */
+    function carregarIdentidade() {
+      const logo = document.getElementById("logo");
+      const nome = document.getElementById("nome-empresa");
+      const slogan = document.getElementById("slogan");
+
+      document.title = `Avalie ${CONFIG.nome}`;
+      nome.textContent = CONFIG.nome;
+      logo.alt = CONFIG.nome;
+
+      logo.addEventListener("load", () => { logo.hidden = false; });
+      logo.addEventListener("error", () => { nome.hidden = false; });
+      logo.src = CONFIG.logo;
+
+      if (CONFIG.slogan.trim()) {
+        slogan.textContent = CONFIG.slogan.trim();
+        slogan.hidden = false;
+      }
+    }
+
+    /* =========================================================
+       3. BOTÃO
+       ========================================================= */
+
+    /**
+     * Aponta o botão (e as estrelas em arco) para o formulário de avaliação do Google.
+     * Por que links (<a>) e não redirecionamento por script: funcionam com
+     * toque simples, são lidos por leitores de tela e não dependem de nada
+     * além do endereço. As estrelas também levam ao Google porque quem vê
+     * uma nota naturalmente toca nela.
+     * @returns {void}
+     */
+    function configurarBotao() {
+      document.getElementById("botao-avaliar").href = CONFIG.linkAvaliacao;
+      document.getElementById("link-estrelas").href = CONFIG.linkAvaliacao;
+    }
+
+    /* =========================================================
+       4. INICIALIZAÇÃO
+       ========================================================= */
+    carregarIdentidade();
+    configurarBotao();
+  </script>
+</body>
+</html>
