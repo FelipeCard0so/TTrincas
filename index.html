@@ -375,8 +375,18 @@
     function configurarBotao() {
       const botao = document.getElementById("botao-avaliar");
       const progresso = botao.querySelector(".progresso-botao");
+      let temporizadorReset;
       botao.href = CONFIG.linkAvaliacao;
       document.getElementById("link-estrelas").href = CONFIG.linkAvaliacao;
+
+      function resetarBotao() {
+        clearTimeout(temporizadorReset);
+        botao.classList.remove("is-carregando");
+        progresso.getAnimations().forEach((animacao) => animacao.cancel());
+        progresso.style.width = "0px";
+      }
+
+      window.addEventListener("pageshow", resetarBotao);
 
       botao.addEventListener("click", (evento) => {
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -391,7 +401,10 @@
           { width: `${largura}px` }
         ], { duration: 1050, easing: "linear", fill: "forwards" });
 
-        barra.onfinish = () => { window.location.href = CONFIG.linkAvaliacao; };
+        barra.onfinish = () => {
+          window.location.href = CONFIG.linkAvaliacao;
+          temporizadorReset = setTimeout(resetarBotao, 2000);
+        };
       });
     }
 
