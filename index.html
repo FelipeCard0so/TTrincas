@@ -71,6 +71,20 @@
                calc(24px + env(safe-area-inset-bottom, 0px));
     }
 
+    .pagina > * {
+      animation: entrada 0.7s both;
+    }
+
+    .pagina > :nth-child(2) { animation-delay: 100ms; }
+    .pagina > :nth-child(3) { animation-delay: 180ms; }
+    .pagina > :nth-child(4) { animation-delay: 260ms; }
+    .pagina > :nth-child(5) { animation-delay: 340ms; }
+
+    @keyframes entrada {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* =========================================================
        4. LOGO
        ========================================================= */
@@ -121,6 +135,7 @@
       /* Curva com leve "salto" no final: dá o efeito de estrela se acendendo */
       animation: estrela-surge 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
       animation-delay: var(--atraso);
+      filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--cor-estrela) 50%, transparent));
     }
 
     /* Única animação da página: as estrelas surgem da esquerda para a direita,
@@ -130,8 +145,14 @@
       to   { opacity: 1; transform: scale(1); }
     }
 
+    .estrela-arco:nth-of-type(3) { animation-name: estrela-surge, estrela-brilho; animation-duration: 0.6s, 2.8s; animation-delay: var(--atraso), 1.2s; animation-iteration-count: 1, infinite; }
+
+    @keyframes estrela-brilho {
+      50% { filter: drop-shadow(0 0 12px var(--cor-estrela-clara)); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .estrela-arco { animation: none; }
+      .pagina > *, .estrela-arco { animation: none !important; }
     }
 
     /* =========================================================
@@ -151,6 +172,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      animation-delay: 260ms;
     }
 
     .mensagem-titulo {
@@ -180,14 +202,74 @@
       background: var(--cor-botao);
       color: var(--cor-texto-botao);
       font-size: 1.15rem;
-      font-weight: 600;
+      font-weight: 700;
+      letter-spacing: 0.01em;
       text-decoration: none;
+      border: 1px solid color-mix(in srgb, var(--cor-texto-botao) 38%, transparent);
+      box-shadow: 0 5px 14px #0003, inset 0 1px 2px #ffffff66;
+      position: relative;
+      overflow: hidden;
+      transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    .botao-avaliar .texto-botao {
+      transition: opacity 140ms ease;
+    }
+
+    .progresso-botao {
+      position: absolute;
+      z-index: 1;
+      left: 50%;
+      top: 50%;
+      width: 0;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--cor-texto-botao);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .botao-avaliar.is-carregando {
+      pointer-events: none;
+      background: color-mix(in srgb, var(--cor-botao) 82%, #000);
+      box-shadow: none;
+    }
+
+    .botao-avaliar.is-carregando .texto-botao,
+    .botao-avaliar.is-carregando::after { opacity: 0; }
+
+    .botao-avaliar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 25%, #ffffff38 48%, transparent 70%);
+      transform: translateX(-120%);
+      animation: brilho-botao 3.8s ease-in-out 1s infinite;
+    }
+
+    @keyframes brilho-botao {
+      35%, 100% { transform: translateX(120%); }
+    }
+
+    .botao-avaliar:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+      box-shadow: 0 8px 20px #0004, inset 0 1px 2px #ffffff77;
+    }
+
+    .botao-avaliar:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 7px #0003, inset 0 1px 3px #0002;
     }
 
     .botao-avaliar:focus-visible {
       outline: 3px solid var(--cor-texto);
       outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pagina > *, .estrela-arco, .botao-avaliar::after { animation: none !important; transition: none; }
     }
   </style>
 </head>
@@ -231,7 +313,7 @@
     </p>
 
     <!-- ===== 5. BOTÃO (o endereço é preenchido pelo JavaScript a partir do CONFIG) ===== -->
-    <a id="botao-avaliar" class="botao-avaliar" href="#">Clique para avaliar</a>
+    <a id="botao-avaliar" class="botao-avaliar" href="#"><span class="texto-botao">Clique para avaliar</span><span class="progresso-botao" aria-hidden="true"></span></a>
   </main>
 
   <script>
@@ -291,8 +373,26 @@
      * @returns {void}
      */
     function configurarBotao() {
-      document.getElementById("botao-avaliar").href = CONFIG.linkAvaliacao;
+      const botao = document.getElementById("botao-avaliar");
+      const progresso = botao.querySelector(".progresso-botao");
+      botao.href = CONFIG.linkAvaliacao;
       document.getElementById("link-estrelas").href = CONFIG.linkAvaliacao;
+
+      botao.addEventListener("click", (evento) => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        evento.preventDefault();
+        if (botao.classList.contains("is-carregando")) return;
+
+        botao.classList.add("is-carregando");
+        const largura = Math.min(300, window.innerWidth - 64);
+        const barra = progresso.animate([
+          { width: "0px" },
+          { width: `${largura}px`, offset: 0.78 },
+          { width: `${largura}px` }
+        ], { duration: 1150, easing: "linear", fill: "forwards" });
+
+        barra.onfinish = () => { window.location.href = CONFIG.linkAvaliacao; };
+      });
     }
 
     /* =========================================================
