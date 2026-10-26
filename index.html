@@ -210,7 +210,13 @@
       position: relative;
       overflow: hidden;
       transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+      animation: botao-bounce 1.4s infinite;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    @keyframes botao-bounce {
+      0%, 100% { transform: translateY(0); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+      50% { transform: translateY(-5px); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
     }
 
     .botao-avaliar .texto-botao {
@@ -230,7 +236,21 @@
       pointer-events: none;
     }
 
+    .progresso-botao.mensagem-progresso {
+      width: auto !important;
+      height: auto;
+      padding: 10px 14px;
+      background: transparent;
+      color: var(--cor-texto-botao);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+      text-align: center;
+    }
+
     .botao-avaliar.is-carregando {
+      animation: none;
       pointer-events: none;
       background: color-mix(in srgb, var(--cor-botao) 82%, #000);
       box-shadow: none;
@@ -252,13 +272,15 @@
       35%, 100% { transform: translateX(120%); }
     }
 
-    .botao-avaliar:hover {
+    .botao-avaliar:hover:not(.is-carregando) {
+      animation-play-state: paused;
       transform: translateY(-2px);
       filter: brightness(1.08);
       box-shadow: 0 8px 20px #0004, inset 0 1px 2px #ffffff77;
     }
 
-    .botao-avaliar:active {
+    .botao-avaliar:active:not(.is-carregando) {
+      animation-play-state: paused;
       transform: translateY(1px);
       box-shadow: 0 2px 7px #0003, inset 0 1px 3px #0002;
     }
@@ -269,7 +291,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .pagina > *, .estrela-arco, .botao-avaliar::after { animation: none !important; transition: none; }
+      .pagina > *, .estrela-arco, .botao-avaliar, .botao-avaliar::after { animation: none !important; transition: none; }
     }
   </style>
 </head>
@@ -383,6 +405,8 @@
         clearTimeout(temporizadorReset);
         botao.classList.remove("is-carregando");
         progresso.getAnimations().forEach((animacao) => animacao.cancel());
+        progresso.classList.remove("mensagem-progresso");
+        progresso.textContent = "";
         progresso.style.width = "0px";
       }
 
@@ -397,13 +421,15 @@
         const largura = Math.min(300, window.innerWidth - 64);
         const barra = progresso.animate([
           { width: "0px" },
-          { width: `${largura}px`, offset: 0.78 },
+          { width: `${largura}px`, offset: 0.62 },
           { width: `${largura}px` }
         ], { duration: 1050, easing: "linear", fill: "forwards" });
 
         barra.onfinish = () => {
-          window.location.href = CONFIG.linkAvaliacao;
+          progresso.classList.add("mensagem-progresso");
+          progresso.textContent = "O B R I G A D O !";
           temporizadorReset = setTimeout(resetarBotao, 2000);
+          setTimeout(() => { window.location.href = CONFIG.linkAvaliacao; }, 700);
         };
       });
     }
